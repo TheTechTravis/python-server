@@ -79,8 +79,8 @@ def create_animal(new_animal):
         VALUES
             ( ?, ?, ?, ?, ?);
         """, (new_animal['name'], new_animal['breed'],
-              new_animal['status'], new_animal['location_id'],
-              new_animal['customer_id']))
+              new_animal['status'], new_animal['locationId'],
+              new_animal['customerId']))
 
         # The `lastrowid` property on the cursor will return
         # the primary key of the last thing that got added to
@@ -93,32 +93,6 @@ def create_animal(new_animal):
         new_animal['id'] = id
 
     return json.dumps(new_animal)
-
-
-# def delete_animal(id):
-#     # Initial -1 value for animal index, in case one isn't found
-#     animal_index = -1
-
-#     # Iterate the ANIMALS list, but use enumerate() so that you
-#     # can access the index value of each item
-#     for index, animal in enumerate(ANIMALS):
-#         if animal["id"] == id:
-#             # Found the animal. Store the current index.
-#             animal_index = index
-
-#     # If the animal was found, use pop(int) to remove it from list
-#     if animal_index >= 0:
-#         ANIMALS.pop(animal_index)
-
-
-# def update_animal(id, new_animal):
-#     # Iterate the ANIMALS list, but use enumerate() so that
-#     # you can access the index value of each item.
-#     for index, animal in enumerate(ANIMALS):
-#         if animal["id"] == id:
-#             # Found the animal. Update the value.
-#             ANIMALS[index] = new_animal
-#             break
 
 
 def get_all_animals():
@@ -199,8 +173,17 @@ def get_single_animal(id):
             a.breed,
             a.status,
             a.location_id,
-            a.customer_id
+            a.customer_id,
+            l.id loc_id,
+            l.name location_name,
+            l.address,
+            c.id cust_id,
+            c.name customer_name
         FROM animal a
+        JOIN Location l
+            ON l.id = a.location_id
+        JOIN Customer c
+            ON c.id = a.customer_id
         WHERE a.id = ?
         """, (id, ))
 
@@ -211,6 +194,13 @@ def get_single_animal(id):
         animal = Animal(data['id'], data['name'], data['breed'],
                         data['status'], data['location_id'],
                         data['customer_id'])
+
+        location = Location(data['location_name'], data['address'])
+
+        customer = Customer(data['cust_id'], data['customer_name'])
+
+        animal.location = location.__dict__
+        animal.customer = customer.__dict__
 
         return json.dumps(animal.__dict__)
 
